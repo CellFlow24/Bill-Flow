@@ -8,6 +8,8 @@
     <title>BillFlow | Professional Billing</title>
     <link rel="stylesheet" href="styles.css">
     <!-- PWA Manifest will be added later -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 
@@ -65,5 +67,16 @@
     </div>
 
     <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker registered', reg))
+                    .catch((err) => console.log('Service Worker not registered', err));
+            });
+        }
+    </script>
+    
 </body>
 </html>

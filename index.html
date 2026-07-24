@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0A192F">
+    <meta name="author" content="Dipun">
+    <title>BillFlow | Professional Billing</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- PWA Manifest will be added later -->
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen-container">
+        <div class="auth-box">
+            <h1 class="brand-title"><span class="brand-blue">Bill</span><span class="brand-green">Flow</span></h1>
+            <p class="subtitle">Enter your credentials</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="userId">User ID</label>
+                    <input type="text" id="userId" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn-primary">Log In</button>
+            </form>
+            <p id="loginError" class="error-text hidden"></p>
+        </div>
+    </div>
+
+    <!-- Change Password Screen -->
+    <div id="changePasswordScreen" class="screen-container hidden">
+        <div class="auth-box">
+            <h2 class="section-title">Setup New Password</h2>
+            <p class="subtitle">For security, please change your default password.</p>
+            <form id="changePasswordForm">
+                <div class="input-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Update Password</button>
+            </form>
+            <p id="passwordError" class="error-text hidden"></p>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen (Placeholder for next phase) -->
+    <div id="dashboardScreen" class="screen-container hidden">
+        <h1 class="brand-title">Welcome to <span class="brand-blue">Bill</span><span class="brand-green">Flow</span></h1>
+        <p id="welcomeMessage"></p>
+        <!-- Dashboard grid will go here -->
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

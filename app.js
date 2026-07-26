@@ -349,12 +349,29 @@ billSearchItem.addEventListener('input', (e) => {
     }
 });
 
-// Hide dropdown if clicked outside
+// Hide dropdowns if clicked outside
 document.addEventListener('click', (e) => {
     if (e.target !== billSearchItem) {
         billItemDropdown.classList.add('hidden');
     }
+    if (e.target !== billMethodInput) {
+        paymentDropdown.classList.add('hidden');
+    }
 });
+
+// --- Custom Payment Dropdown Logic ---
+const billMethodInput = document.getElementById('billMethod');
+const paymentDropdown = document.getElementById('paymentDropdown');
+
+billMethodInput.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevents the document click listener from immediately hiding it
+    paymentDropdown.classList.toggle('hidden');
+});
+
+function selectPayment(method) {
+    billMethodInput.value = method;
+    paymentDropdown.classList.add('hidden');
+}
 
 // 2. Cart Management
 function addItemToCart(item) {

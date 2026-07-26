@@ -244,6 +244,7 @@ loginForm.addEventListener('submit', async (e) => {
                 loadDashboardStats();
                 loadItems();
                 loadBills();
+                loadSettings();
             }
         } else {
             loginError.innerText = data.message;
@@ -631,6 +632,7 @@ function selectHistorySearch(val, text) {
 
 // --- History & Dues Logic ---
 let allBills = [];
+let companySettings = {};
 
 async function loadBills() {
     try {
@@ -647,6 +649,23 @@ async function loadBills() {
         }
     } catch (error) {
         console.error("Failed to load bills", error);
+    }
+}
+
+async function loadSettings() {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getSettings' }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            companySettings = data.settings;
+        }
+    } catch (error) {
+        console.error("Failed to load settings", error);
     }
 }
 

@@ -465,3 +465,21 @@ function calculateBill() {
 // Re-calculate when user types in discount or paid amount
 billDiscount.addEventListener('input', calculateBill);
 billPaid.addEventListener('input', calculateBill);
+
+// --- Phone Number Validation ---
+const customerPhone = document.getElementById('customerPhone');
+
+customerPhone.addEventListener('input', function(e) {
+    // This removes anything that is NOT a number (0-9) instantly
+    this.value = this.value.replace(/\D/g, '');
+    
+    // This acts as a backup to ensure it never exceeds 10 digits if they paste a long number
+    if (this.value.length > 10) {
+        this.value = this.value.slice(0, 10);
+    }
+});
+
+// Remove any red error styling when they start typing
+customerPhone.addEventListener('focus', function() {
+    this.style.border = "1px solid #CBD5E1";
+});

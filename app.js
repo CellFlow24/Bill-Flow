@@ -240,6 +240,7 @@ loginForm.addEventListener('submit', async (e) => {
                 // Fetch data in the background!
                 loadDashboardStats();
                 loadItems();
+                loadBills();
             }
         } else {
             loginError.innerText = data.message;
@@ -576,6 +577,7 @@ saveBillBtn.addEventListener('click', async () => {
             
             // Refresh Dashboard numbers in the background
             loadDashboardStats(); 
+            loadBills();
             
             // Note: The PDF trigger will be added here in Phase 6!
         } else {
@@ -587,3 +589,83 @@ saveBillBtn.addEventListener('click', async () => {
         hideLoader();
     }
 });
+
+// --- History & Dues Logic ---
+let allBills = [];
+
+async function loadBills() {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getBills' }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            allBills = data.bills;
+            renderBills();
+        }
+    } catch (error) {
+        console.error("Failed to load bills", error);
+    }
+}
+
+function renderBills(filterDueStr = '', filterHistoryStr = '') {
+    const dueListView = document.getElementById('dueListView');
+    const historyListView = document.getElementById('historyListView');
+    
+    dueListView.innerHTML = '';
+    historyListView.innerHTML = '';
+    
+    const dueSearchType = document.getElementById('dueSearchType').value; // 'name' or 'id'
+    const historySearchType = document.getElementById('historySearchType').value;
+
+    let hasDue = false;
+    let hasHistory = false;
+
+    allBills.forEach(bill => {
+        const isDue = parseFloat(bill.due) > 0;
+        
+        // Build the sleek card UI for the list
+        const cardHTML = `
+            <div class="bill-card" style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-light);">${bill.date.split(',')[0]}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                    <span style="color: var(--text-light); font-family: monospace;">${bill.id}</span>
+                    <strong style="color: ${isDue ? 'var(--error-red)' : 'var(--trust-green)'};">
+                        ${isDue ? 'Due: ₹' + bill.due : 'Paid: ₹' + bill.paid}
+                    </strong>
+                </div>
+            </div>
+        `;
+
+        // Filter Logic for History Screen
+        const histMatch = bill[historySearchType].toLowerCase().includes(filterHistoryStr.toLowerCase());
+        if (histMatch) {
+            historyListView.innerHTML += cardHTML;
+            hasHistory = true;
+        }
+
+        // Filter Logic for Due Screen (Only show if it has a due amount)
+        if (isDue) {
+            const dueMatch = bill[dueSearchType].toLowerCase().includes(filterDueStr.toLowerCase());
+            if (dueMatch) {
+                dueListView.innerHTML += cardHTML;
+                hasDue = true;
+            }
+        }
+    });
+
+    if (!hasDue) dueListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No due bills found.</p>';
+    if (!hasHistory) historyListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No bills found.</p>';
+}
+
+// Attach Search Listeners
+document.getElementById('dueSearchInput').addEventListener('input', (e) => renderBills(e.target.value, document.getElementById('historySearchInput').value));
+document.getElementById('historySearchInput').addEventListener('input', (e) => renderBills(document.getElementById('dueSearchInput').value, e.target.value));
+document.getElementById('dueSearchType').addEventListener('change', () => renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value));
+document.getElementById('historySearchType').addEventListener('change', () => renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value));

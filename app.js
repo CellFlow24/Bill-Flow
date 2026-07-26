@@ -173,6 +173,16 @@ function switchTab(screenId, clickedButton) {
     if (clickedButton) {
         clickedButton.classList.add('active');
     }
+
+    // --- NEW: Initialize Billing Screen Data ---
+    if (screenId === 'billingScreen') {
+        // Generates an ID like INV-492817
+        document.getElementById('billId').value = 'INV-' + Date.now().toString().slice(-6); 
+        // Formats date/time accurately for India locale
+        document.getElementById('billDate').value = new Date().toLocaleString('en-IN');
+        
+        calculateBill(); // Ensure math fields are reset to zero
+    }
 }
 
 // Show/Hide Loader
@@ -295,3 +305,163 @@ changePasswordForm.addEventListener('submit', async (e) => {
         hideLoader();
     }
 });
+
+// --- Billing Engine State ---
+let currentCart = [];
+
+// DOM Elements for Billing
+const billSearchItem = document.getElementById('billSearchItem');
+const billItemDropdown = document.getElementById('billItemDropdown');
+const cartBody = document.getElementById('cartBody');
+const billDiscount = document.getElementById('billDiscount');
+const billPaid = document.getElementById('billPaid');
+
+// 1. Live Item Search Dropdown
+billSearchItem.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    billItemDropdown.innerHTML = '';
+    
+    if (searchTerm.length === 0) {
+        billItemDropdown.classList.add('hidden');
+        return;
+    }
+
+    // Filter inventory based on search
+    const filtered = inventoryItems.filter(item => item.name.toLowerCase().includes(searchTerm));
+    
+    if (filtered.length > 0) {
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.innerHTML = `<span><strong style="color: var(--navy-blue);">${item.name}</strong> <small style="color: var(--text-light);">(GST ${item.gst}%)</small></span><span>₹${item.finalPrice}</span>`;
+            
+            // Add to cart on click
+            div.onclick = () => {
+                addItemToCart(item);
+                billSearchItem.value = '';
+                billItemDropdown.classList.add('hidden');
+            };
+            billItemDropdown.appendChild(div);
+        });
+        billItemDropdown.classList.remove('hidden');
+    } else {
+        billItemDropdown.classList.add('hidden');
+    }
+});
+
+// Hide dropdown if clicked outside
+document.addEventListener('click', (e) => {
+    if (e.target !== billSearchItem) {
+        billItemDropdown.classList.add('hidden');
+    }
+});
+
+// 2. Cart Management
+function addItemToCart(item) {
+    const existingItem = currentCart.find(i => i.id === item.id);
+    if (existingItem) {
+        existingItem.qty += 1;
+    } else {
+        // Create a deep copy of the item and set initial quantity to 1
+        currentCart.push({ ...item, qty: 1 });
+    }
+    renderCart();
+    calculateBill();
+}
+
+function updateCartQty(index, newQty) {
+    const qty = parseInt(newQty);
+    if (qty > 0) {
+        currentCart[index].qty = qty;
+        renderCart();
+        calculateBill();
+    }
+}
+
+function removeFromCart(index) {
+    currentCart.splice(index, 1);
+    renderCart();
+    calculateBill();
+}
+
+// 3. Render Cart Table UI
+function renderCart() {
+    cartBody.innerHTML = '';
+    
+    if (currentCart.length === 0) {
+        cartBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748B;">No items added yet.</td></tr>';
+        return;
+    }
+
+    currentCart.forEach((item, index) => {
+        const itemTotal = (item.finalPrice * item.qty).toFixed(2);
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+            <td>
+                <strong style="color: var(--navy-blue);">${item.name}</strong><br>
+                <small style="color: var(--text-light);">₹${item.finalPrice} / ea</small>
+            </td>
+            <td>
+                <input type="number" value="${item.qty}" min="1" 
+                    style="width: 50px; padding: 6px; border-radius: 6px; border: 1px solid #CBD5E1; text-align: center;" 
+                    onchange="updateCartQty(${index}, this.value)">
+            </td>
+            <td style="font-weight: 600; color: var(--navy-blue);">₹${itemTotal}</td>
+            <td style="text-align: right;">
+                <button type="button" class="delete-btn" onclick="removeFromCart(${index})">×</button>
+            </td>
+        `;
+        cartBody.appendChild(tr);
+    });
+}
+
+// 4. The Math Calculator Engine
+function calculateBill() {
+    let subTotal = 0;
+    let totalGst = 0;
+
+    // Calculate totals from cart
+    currentCart.forEach(item => {
+        const basePrice = parseFloat(item.price);
+        const gstPercent = parseFloat(item.gst);
+        const qty = item.qty;
+        
+        const itemBaseTotal = basePrice * qty;
+        const itemGstTotal = itemBaseTotal * (gstPercent / 100);
+        
+        // SubTotal includes the base price + GST (matches finalPrice)
+        subTotal += (itemBaseTotal + itemGstTotal);
+        totalGst += itemGstTotal;
+    });
+
+    // Apply Discount
+    const discount = parseFloat(billDiscount.value) || 0;
+    let payable = subTotal - discount;
+    if (payable < 0) payable = 0; // Prevent negative payable
+    
+    // Calculate Due
+    const paid = parseFloat(billPaid.value) || 0;
+    let due = payable - paid;
+    
+    // Update UI Elements
+    document.getElementById('summarySubTotal').innerText = `₹${subTotal.toFixed(2)}`;
+    document.getElementById('summaryGst').innerText = `₹${totalGst.toFixed(2)}`;
+    document.getElementById('summaryPayable').innerText = `₹${payable.toFixed(2)}`;
+    
+    const dueField = document.getElementById('billDue');
+    dueField.value = due.toFixed(2);
+    
+    // Color code the Due field based on status
+    if (due > 0) {
+        dueField.style.color = "var(--error-red)"; // Money owed
+    } else if (due < 0) {
+        dueField.style.color = "var(--trust-green)"; // Overpaid / Change due
+    } else {
+        dueField.style.color = "var(--text-light)"; // Perfectly balanced
+    }
+}
+
+// Re-calculate when user types in discount or paid amount
+billDiscount.addEventListener('input', calculateBill);
+billPaid.addEventListener('input', calculateBill);

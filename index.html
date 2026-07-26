@@ -255,16 +255,18 @@
         </div>
         <div class="card-box">
             <input type="text" id="dueSearchInput" class="search-bar" placeholder="Search due bills..." autocomplete="off">
-            <div class="input-group" style="margin-bottom: 15px;">
-                <!-- Reusing our custom CSS class for the dropdown -->
-                <select id="dueSearchType" class="custom-select" style="padding: 8px 15px; font-size: 0.9rem;">
-                    <option value="name">Search by Name</option>
-                    <option value="id">Search by Bill ID</option>
-                </select>
+            
+            <!-- CUSTOM CSS DROPDOWN FOR DUE SEARCH -->
+            <div class="input-group" style="position: relative; margin-bottom: 15px;">
+                <input type="text" id="dueSearchTypeInput" class="custom-select" value="Search by Name" readonly style="cursor: pointer; padding: 8px 15px; font-size: 0.9rem;">
+                <input type="hidden" id="dueSearchType" value="name">
+                <div id="dueSearchDropdown" class="dropdown-content hidden" style="top: 100%; margin-top: 5px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);">
+                    <div class="dropdown-item" onclick="selectDueSearch('name', 'Search by Name')">Search by Name</div>
+                    <div class="dropdown-item" onclick="selectDueSearch('id', 'Search by Bill ID')">Search by Bill ID</div>
+                </div>
             </div>
-            <div id="dueListView" class="item-list" style="max-height: 60vh;">
-                <!-- Due bills inject here -->
-            </div>
+
+            <div id="dueListView" class="item-list" style="max-height: 60vh;"></div>
         </div>
     </div>
 
@@ -275,15 +277,18 @@
         </div>
         <div class="card-box">
             <input type="text" id="historySearchInput" class="search-bar" placeholder="Search all bills..." autocomplete="off">
-            <div class="input-group" style="margin-bottom: 15px;">
-                <select id="historySearchType" class="custom-select" style="padding: 8px 15px; font-size: 0.9rem;">
-                    <option value="name">Search by Name</option>
-                    <option value="id">Search by Bill ID</option>
-                </select>
+            
+            <!-- CUSTOM CSS DROPDOWN FOR HISTORY SEARCH -->
+            <div class="input-group" style="position: relative; margin-bottom: 15px;">
+                <input type="text" id="historySearchTypeInput" class="custom-select" value="Search by Name" readonly style="cursor: pointer; padding: 8px 15px; font-size: 0.9rem;">
+                <input type="hidden" id="historySearchType" value="name">
+                <div id="historySearchDropdown" class="dropdown-content hidden" style="top: 100%; margin-top: 5px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);">
+                    <div class="dropdown-item" onclick="selectHistorySearch('name', 'Search by Name')">Search by Name</div>
+                    <div class="dropdown-item" onclick="selectHistorySearch('id', 'Search by Bill ID')">Search by Bill ID</div>
+                </div>
             </div>
-            <div id="historyListView" class="item-list" style="max-height: 60vh;">
-                <!-- All bills inject here -->
-            </div>
+
+            <div id="historyListView" class="item-list" style="max-height: 60vh;"></div>
         </div>
     </div>
 

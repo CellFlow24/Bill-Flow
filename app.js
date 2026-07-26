@@ -16,6 +16,23 @@ const passwordError = document.getElementById('passwordError');
 // State
 let currentUserId = "";
 
+// Tab Switching Logic
+function switchTab(screenId, clickedButton) {
+    // Hide all screens
+    const screens = ['dashboardScreen', 'itemScreen', 'billingScreen', 'dueScreen', 'historyScreen'];
+    screens.forEach(id => document.getElementById(id).classList.add('hidden'));
+    
+    // Show target screen
+    document.getElementById(screenId).classList.remove('hidden');
+
+    // Update active state on buttons
+    const navButtons = document.querySelectorAll('.nav-item');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
+}
+
 // Show/Hide Loader
 function showLoader() {
     loadingOverlay.classList.remove('hidden');
@@ -66,6 +83,7 @@ loginForm.addEventListener('submit', async (e) => {
                 // Route to dashboard
                 document.getElementById('welcomeMessage').innerText = `Hello, ${data.name}!`;
                 showScreen(dashboardScreen);
+                document.getElementById('bottomNav').classList.remove('hidden'); // SHOW NAVBAR
             }
         } else {
             loginError.innerText = data.message;

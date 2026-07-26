@@ -19,6 +19,8 @@ let currentUserId = "";
 // Global State for Data
 let inventoryItems = [];
 
+let currentUserName = "";
+
 // Toast Notification Engine
 const toastContainer = document.getElementById('toastContainer');
 
@@ -227,6 +229,7 @@ loginForm.addEventListener('submit', async (e) => {
 
         if (data.success) {
             currentUserId = userIdInput;
+            currentUserName = data.name;
             
             if (data.requirePasswordChange) {
                 // Route to password setup
@@ -358,6 +361,8 @@ document.addEventListener('click', (e) => {
     if (e.target !== billMethodInput) {
         paymentDropdown.classList.add('hidden');
     }
+    if (e.target !== dueSearchTypeInput) dueSearchDropdown.classList.add('hidden');
+    if (e.target !== historySearchTypeInput) historySearchDropdown.classList.add('hidden');
 });
 
 // --- Custom Payment Dropdown Logic ---
@@ -534,6 +539,7 @@ saveBillBtn.addEventListener('click', async () => {
         paid: document.getElementById('billPaid').value || 0,
         due: document.getElementById('billDue').value,
         method: document.getElementById('billMethod').value,
+        createdBy: currentUserName,
         
         // Map the cart to calculate precise GST per item for the database
         cart: currentCart.map(item => {
@@ -590,6 +596,39 @@ saveBillBtn.addEventListener('click', async () => {
     }
 });
 
+// --- Custom Search Dropdown Logic ---
+const dueSearchTypeInput = document.getElementById('dueSearchTypeInput');
+const dueSearchDropdown = document.getElementById('dueSearchDropdown');
+const dueSearchType = document.getElementById('dueSearchType');
+
+const historySearchTypeInput = document.getElementById('historySearchTypeInput');
+const historySearchDropdown = document.getElementById('historySearchDropdown');
+const historySearchType = document.getElementById('historySearchType');
+
+dueSearchTypeInput.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dueSearchDropdown.classList.toggle('hidden');
+});
+
+historySearchTypeInput.addEventListener('click', (e) => {
+    e.stopPropagation();
+    historySearchDropdown.classList.toggle('hidden');
+});
+
+function selectDueSearch(val, text) {
+    dueSearchType.value = val;
+    dueSearchTypeInput.value = text;
+    dueSearchDropdown.classList.add('hidden');
+    renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value);
+}
+
+function selectHistorySearch(val, text) {
+    historySearchType.value = val;
+    historySearchTypeInput.value = text;
+    historySearchDropdown.classList.add('hidden');
+    renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value);
+}
+
 // --- History & Dues Logic ---
 let allBills = [];
 
@@ -627,12 +666,22 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
     allBills.forEach(bill => {
         const isDue = parseFloat(bill.due) > 0;
         
-        // Build the sleek card UI for the list
+        // Format the ugly Date string into a beautiful format (e.g., "26 Jul 2026, 11:38 AM")
+        const d = new Date(bill.date);
+        let niceDate = bill.date; 
+        if (!isNaN(d)) {
+            niceDate = d.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}) + ', ' + d.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Add the creator's name if it exists in the database
+        const creatorText = bill.createdBy ? ` • By ${bill.createdBy}` : '';
+
+        // Build the sleek card UI
         const cardHTML = `
             <div class="bill-card" style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
-                    <span style="font-size: 0.8rem; color: var(--text-light);">${bill.date.split(',')[0]}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-light); text-align: right;">${niceDate}${creatorText}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
                     <span style="color: var(--text-light); font-family: monospace;">${bill.id}</span>
@@ -644,7 +693,7 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
         `;
 
         // Filter Logic for History Screen
-        const histMatch = bill[historySearchType].toLowerCase().includes(filterHistoryStr.toLowerCase());
+        const histMatch = bill[historySearchType.value].toLowerCase().includes(filterHistoryStr.toLowerCase());
         if (histMatch) {
             historyListView.innerHTML += cardHTML;
             hasHistory = true;
@@ -652,14 +701,13 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
 
         // Filter Logic for Due Screen (Only show if it has a due amount)
         if (isDue) {
-            const dueMatch = bill[dueSearchType].toLowerCase().includes(filterDueStr.toLowerCase());
+            const dueMatch = bill[dueSearchType.value].toLowerCase().includes(filterDueStr.toLowerCase());
             if (dueMatch) {
                 dueListView.innerHTML += cardHTML;
                 hasDue = true;
             }
         }
     });
-
     if (!hasDue) dueListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No due bills found.</p>';
     if (!hasHistory) historyListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No bills found.</p>';
 }

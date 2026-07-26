@@ -165,6 +165,8 @@ function switchTab(screenId, clickedButton) {
     // Hide all screens
     const screens = ['dashboardScreen', 'itemScreen', 'billingScreen', 'dueScreen', 'historyScreen'];
     screens.forEach(id => document.getElementById(id).classList.add('hidden'));
+    // Show the print preview screen cleanly
+    document.getElementById('printPreviewScreen').classList.remove('hidden');
     
     // Show target screen
     document.getElementById(screenId).classList.remove('hidden');

@@ -587,7 +587,7 @@ saveBillBtn.addEventListener('click', async () => {
             loadBills();
             
             // Trigger the Print Preview immediately using the payload we just built
-            openPrintPreview(billPayload);
+            openPrintPreview(billPayload, 'billingScreen');
         } else {
             showToast("Failed to save bill.", "error");
         }
@@ -677,45 +677,43 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
     dueListView.innerHTML = '';
     historyListView.innerHTML = '';
     
-    const dueSearchType = document.getElementById('dueSearchType').value; // 'name' or 'id'
+    const dueSearchType = document.getElementById('dueSearchType').value;
     const historySearchType = document.getElementById('historySearchType').value;
 
     let hasDue = false;
     let hasHistory = false;
 
+    // Helper to generate the card so we can inject the specific origin screen
+    const createCard = (bill, origin, niceDate, creatorText, isDue) => `
+        <div class="bill-card" onclick='openPrintPreview(${JSON.stringify(bill).replace(/'/g, "&apos;")}, "${origin}")' style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
+                <span style="font-size: 0.75rem; color: var(--text-light); text-align: right;">${niceDate}${creatorText}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="color: var(--text-light); font-family: monospace;">${bill.id}</span>
+                <strong style="color: ${isDue ? 'var(--error-red)' : 'var(--trust-green)'};">
+                    ${isDue ? 'Due: ₹' + bill.due : 'Paid: ₹' + bill.paid}
+                </strong>
+            </div>
+        </div>
+    `;
+
     allBills.forEach(bill => {
         const isDue = parseFloat(bill.due) > 0;
         
-        // Format the ugly Date string into a beautiful format
         const d = new Date(bill.date);
         let niceDate = bill.date; 
         if (!isNaN(d)) {
             niceDate = d.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}) + ', ' + d.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
         }
         
-        // Add the creator's name if it exists in the database
         const creatorText = bill.createdBy ? ` • By ${bill.createdBy}` : '';
-
-        // Build the sleek card UI (ADDED ONCLICK EVENT HERE)
-        const cardHTML = `
-            <div class="bill-card" onclick='openPrintPreview(${JSON.stringify(bill).replace(/'/g, "&apos;")})' style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
-                    <span style="font-size: 0.75rem; color: var(--text-light); text-align: right;">${niceDate}${creatorText}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-                    <span style="color: var(--text-light); font-family: monospace;">${bill.id}</span>
-                    <strong style="color: ${isDue ? 'var(--error-red)' : 'var(--trust-green)'};">
-                        ${isDue ? 'Due: ₹' + bill.due : 'Paid: ₹' + bill.paid}
-                    </strong>
-                </div>
-            </div>
-        `;
 
         // Filter Logic for History Screen
         const histMatch = bill[historySearchType].toLowerCase().includes(filterHistoryStr.toLowerCase());
         if (histMatch) {
-            historyListView.innerHTML += cardHTML;
+            historyListView.innerHTML += createCard(bill, 'historyScreen', niceDate, creatorText, isDue);
             hasHistory = true;
         }
 
@@ -723,7 +721,7 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
         if (isDue) {
             const dueMatch = bill[dueSearchType].toLowerCase().includes(filterDueStr.toLowerCase());
             if (dueMatch) {
-                dueListView.innerHTML += cardHTML;
+                dueListView.innerHTML += createCard(bill, 'dueScreen', niceDate, creatorText, isDue);
                 hasDue = true;
             }
         }
@@ -739,6 +737,13 @@ document.getElementById('dueSearchType').addEventListener('change', () => render
 document.getElementById('historySearchType').addEventListener('change', () => renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value));
 
 // --- PDF Generator Engine ---
+
+// Variable to remember where the user came from
+let printPreviewOrigin = 'historyScreen';
+
+function closePrintPreview() {
+    switchTab(printPreviewOrigin);
+}
 
 // Helper: Convert Number to Words (Indian Rupee Format)
 function numberToWords(num) {
@@ -756,7 +761,8 @@ function numberToWords(num) {
     return str.toUpperCase();
 }
 
-function openPrintPreview(billData) {
+function openPrintPreview(billData, origin = 'historyScreen') {
+    printPreviewOrigin = origin;
     // 1. Populate Company Settings
     document.getElementById('invCompanyName').innerText = companySettings.CompanyName || '';
     document.getElementById('invCompanyAddress').innerText = companySettings.CompanyAddress || '';

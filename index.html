@@ -61,12 +61,88 @@
         </div>
     </div>
 
-    <!-- Dashboard Screen (Placeholder for next phase) -->
+    <!-- Dashboard Screen -->
     <div id="dashboardScreen" class="screen-container hidden">
-        <h1 class="brand-title">Welcome to <span class="brand-blue">Bill</span><span class="brand-green">Flow</span></h1>
-        <p id="welcomeMessage"></p>
-        <!-- Dashboard grid will go here -->
+        <div class="app-header">
+            <img src="logo.png" alt="BillFlow" class="header-logo">
+            <p id="welcomeMessage" class="subtitle"></p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="stat-card blue-card">
+                <p class="stat-label">Today's Amount</p>
+                <h3 class="stat-value">₹<span id="statTodayAmount">0.00</span></h3>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Today's Bills</p>
+                <h3 class="stat-value" id="statTodayCount">0</h3>
+            </div>
+            <div class="stat-card green-card">
+                <p class="stat-label">Total Bills</p>
+                <h3 class="stat-value" id="statTotalCount">0</h3>
+            </div>
+            <div class="stat-card red-card">
+                <p class="stat-label">Today's Due</p>
+                <h3 class="stat-value">₹<span id="statTodayDue">0.00</span></h3>
+            </div>
+            <div class="stat-card red-card">
+                <p class="stat-label">Total Due</p>
+                <h3 class="stat-value">₹<span id="statTotalDue">0.00</span></h3>
+            </div>
+        </div>
     </div>
+
+    <!-- Item Management Screen -->
+    <div id="itemScreen" class="screen-container hidden">
+        <div class="app-header">
+            <h2 class="section-title">Item Management</h2>
+        </div>
+        
+        <!-- Add Item Box -->
+        <div class="card-box">
+            <h3 class="card-title">Add New Item</h3>
+            <form id="addItemForm">
+                <div class="input-group">
+                    <label>Item Name</label>
+                    <input type="text" id="itemName" required autocomplete="off">
+                </div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="itemPrice" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>GST (%)</label>
+                        <input type="number" id="itemGst" value="0" min="0" max="100" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Save Item</button>
+            </form>
+        </div>
+
+        <!-- Search & List Box -->
+        <div class="card-box" style="margin-top: 20px;">
+            <input type="text" id="searchItem" class="search-bar" placeholder="Search items...">
+            <div id="itemListView" class="item-list">
+                <!-- Items will be injected here via JavaScript -->
+                <p style="text-align:center; color: #64748B; font-size: 0.9rem;">No items found.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screens for later phases (Hidden for now) -->
+    <div id="billingScreen" class="screen-container hidden"><h2 class="section-title">Billing Area</h2></div>
+    <div id="dueScreen" class="screen-container hidden"><h2 class="section-title">Due Bills</h2></div>
+    <div id="historyScreen" class="screen-container hidden"><h2 class="section-title">History</h2></div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottomNav" class="bottom-nav hidden">
+        <button class="nav-item active" onclick="switchTab('dashboardScreen', this)">Home</button>
+        <button class="nav-item" onclick="switchTab('itemScreen', this)">Items</button>
+        <button class="nav-item" onclick="switchTab('billingScreen', this)">Bill</button>
+        <button class="nav-item" onclick="switchTab('dueScreen', this)">Dues</button>
+        <button class="nav-item" onclick="switchTab('historyScreen', this)">History</button>
+    </nav>
 
     <script src="app.js"></script>
 

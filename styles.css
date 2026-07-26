@@ -177,3 +177,111 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
+/* App Header (Dashboard & Inner Pages) */
+.app-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+.header-logo {
+    width: 140px;
+    height: auto;
+    margin-bottom: 5px;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding-bottom: 80px; /* Space for bottom nav */
+}
+/* Make the first card span full width to emphasize Today's Amount */
+.dashboard-grid .stat-card:first-child {
+    grid-column: 1 / -1; 
+}
+
+/* Stat & Content Cards */
+.stat-card, .card-box {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border-left: 4px solid var(--navy-blue);
+}
+.card-box {
+    border-left: none; /* Clean edges for forms */
+    padding-bottom: 80px; 
+}
+
+/* Colored Card Accents */
+.blue-card { border-left-color: var(--tech-blue); background: linear-gradient(to right, #ffffff, #f0f4ff); }
+.green-card { border-left-color: var(--trust-green); }
+.red-card { border-left-color: var(--error-red); }
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.stat-value {
+    font-size: 1.5rem;
+    color: var(--navy-blue);
+    font-weight: 800;
+}
+.blue-card .stat-value { color: var(--tech-blue); font-size: 2rem; }
+
+/* Item Form Grid & List */
+.card-title {
+    font-size: 1.1rem;
+    color: var(--navy-blue);
+    margin-bottom: 15px;
+}
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.search-bar {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    background-color: var(--light-bg);
+}
+.item-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 5px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+.nav-item {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.nav-item.active {
+    color: var(--tech-blue);
+    background: rgba(0, 82, 255, 0.1);
+}

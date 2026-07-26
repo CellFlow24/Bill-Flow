@@ -16,6 +16,127 @@ const passwordError = document.getElementById('passwordError');
 // State
 let currentUserId = "";
 
+// Global State for Data
+let inventoryItems = [];
+
+// --- Dashboard Logic ---
+async function loadDashboardStats() {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getDashboardStats' }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('statTodayAmount').innerText = data.stats.todayAmount.toFixed(2);
+            document.getElementById('statTodayCount').innerText = data.stats.todayCount;
+            document.getElementById('statTotalCount').innerText = data.stats.totalCount;
+            document.getElementById('statTodayDue').innerText = data.stats.todayDue.toFixed(2);
+            document.getElementById('statTotalDue').innerText = data.stats.totalDue.toFixed(2);
+        }
+    } catch (error) {
+        console.error("Failed to load stats", error);
+    }
+}
+
+// --- Item Management Logic ---
+const addItemForm = document.getElementById('addItemForm');
+const searchItemInput = document.getElementById('searchItem');
+const itemListView = document.getElementById('itemListView');
+
+// Save New Item
+addItemForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showLoader();
+    
+    const itemName = document.getElementById('itemName').value;
+    const itemPrice = document.getElementById('itemPrice').value;
+    const itemGst = document.getElementById('itemGst').value;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'saveItem',
+                itemName: itemName,
+                price: itemPrice,
+                gst: itemGst
+            }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            addItemForm.reset();
+            alert("Item saved successfully!");
+            await loadItems(); // Refresh the list automatically
+        } else {
+            alert("Failed to save item.");
+        }
+    } catch (error) {
+        alert("Connection error.");
+    } finally {
+        hideLoader();
+    }
+});
+
+// Load Items from Server
+async function loadItems() {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getItems' }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            inventoryItems = data.items;
+            renderItemList(inventoryItems);
+        }
+    } catch (error) {
+        console.error("Failed to load items", error);
+    }
+}
+
+// Render Items to HTML
+function renderItemList(itemsToRender) {
+    itemListView.innerHTML = ''; // Clear current list
+    
+    if (itemsToRender.length === 0) {
+        itemListView.innerHTML = '<p style="text-align:center; color: #64748B;">No items found.</p>';
+        return;
+    }
+
+    itemsToRender.forEach(item => {
+        const itemDiv = document.createElement('div');
+        // Simple inline CSS for the list items to make them look sharp
+        itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #E2E8F0;';
+        itemDiv.innerHTML = `
+            <div>
+                <strong style="color: var(--navy-blue); display: block;">${item.name}</strong>
+                <span style="font-size: 0.8rem; color: var(--text-light);">ID: ${item.id} | GST: ${item.gst}%</span>
+            </div>
+            <div style="text-align: right;">
+                <strong style="color: var(--trust-green);">₹${item.finalPrice}</strong>
+            </div>
+        `;
+        itemListView.appendChild(itemDiv);
+    });
+}
+
+// Search Filter functionality
+searchItemInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredItems = inventoryItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm) || 
+        item.id.toLowerCase().includes(searchTerm)
+    );
+    renderItemList(filteredItems);
+});
+
 // Tab Switching Logic
 function switchTab(screenId, clickedButton) {
     // Hide all screens
@@ -83,7 +204,11 @@ loginForm.addEventListener('submit', async (e) => {
                 // Route to dashboard
                 document.getElementById('welcomeMessage').innerText = `Hello, ${data.name}!`;
                 showScreen(dashboardScreen);
-                document.getElementById('bottomNav').classList.remove('hidden'); // SHOW NAVBAR
+                document.getElementById('bottomNav').classList.remove('hidden');
+                
+                // Fetch data in the background!
+                loadDashboardStats();
+                loadItems();
             }
         } else {
             loginError.innerText = data.message;

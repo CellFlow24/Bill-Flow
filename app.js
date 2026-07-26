@@ -957,8 +957,18 @@ function openPrintPreview(billData, origin = 'historyScreen') {
     } else if (billData.clearDate && billData.clearDate.trim() !== '') {
         stampEl.innerText = "CLEARED";
         stampEl.className = "stamp stamp-paid"; // Uses the green styling
-        // Show clear date on PDF
-        document.getElementById('invMethod').innerText = billData.method + ` (Cleared: ${billData.clearDate.split(',')[0]})`;
+        
+        // Format the clear date to remove GMT timezone text
+        let niceClearDate = billData.clearDate;
+        const cd = new Date(niceClearDate);
+        if (!isNaN(cd)) {
+            niceClearDate = cd.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}) + ', ' + cd.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+        } else if (niceClearDate.includes(' GMT')) {
+            niceClearDate = niceClearDate.split(' GMT')[0]; // Fallback if Date parsing fails
+        }
+        
+        // Show clean clear date on PDF
+        document.getElementById('invMethod').innerText = billData.method + ` (Cleared: ${niceClearDate})`;
     } else {
         stampEl.innerText = "PAID";
         stampEl.className = "stamp stamp-paid";

@@ -411,3 +411,131 @@ body {
     background-position: right 15px top 50%;
     background-size: 12px auto;
 }
+
+/* --- INVOICE PRINT LAYOUT --- */
+.invoice-wrapper {
+    background: #fff;
+    padding: 30px;
+    color: #000;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.inv-header {
+    display: flex;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.inv-logo-box { width: 180px; }
+
+.inv-logo {
+    max-width: 100%;
+    height: auto;
+    background-color: #ffffff; /* Prevents black background rendering on PDFs */
+}
+
+.inv-company-details {
+    flex-grow: 1;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.inv-company-details h2 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.inv-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 2px solid #000;
+    margin-bottom: 15px;
+}
+
+.inv-info-col { padding: 8px 12px; }
+.border-right { border-right: 1px solid #000; }
+.border-bottom { border-bottom: 1px solid #000; }
+
+.inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    border: 2px solid #000;
+}
+
+.inv-table th, .inv-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+}
+.inv-table th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; }
+
+.inv-footer-grid {
+    display: grid;
+    grid-template-columns: 35% 30% 35%;
+    border: 2px solid #000;
+}
+
+.inv-bank-box, .inv-stamp-box, .inv-calc-box { padding: 10px; line-height: 1.5; }
+
+.inv-stamp-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.stamp {
+    font-size: 2.2rem;
+    font-weight: 800;
+    padding: 10px 20px;
+    border: 4px solid;
+    border-radius: 10px;
+    transform: rotate(-15deg);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.stamp-paid { color: #10B981; border-color: #10B981; }
+.stamp-due { color: #EF4444; border-color: #EF4444; }
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.inv-bottom-row {
+    display: flex;
+    border-left: 2px solid #000;
+    border-right: 2px solid #000;
+    border-bottom: 2px solid #000;
+    align-items: center;
+}
+
+/* --- THE PRINT ENGINE --- */
+@media print {
+    body * { visibility: hidden; } /* Hides entire app */
+    
+    #printPreviewScreen, #printPreviewScreen * { visibility: visible; } /* Shows only preview */
+    
+    #printPreviewScreen {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        max-width: none;
+    }
+
+    .no-print { display: none !important; } /* Strips the print button out of the PDF */
+    
+    .invoice-wrapper {
+        padding: 0;
+        box-shadow: none;
+    }
+}

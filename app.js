@@ -766,7 +766,8 @@ function openPrintPreview(billData) {
 
     // Handle GST Field Visibility
     const gstBlock = document.getElementById('invGstBlock');
-    if (companySettings.GSTNumber && companySettings.GSTNumber.trim() !== '') {
+    const hasGst = companySettings.GSTNumber && companySettings.GSTNumber.trim() !== '';
+    if (hasGst) {
         document.getElementById('invGstNumber').innerText = companySettings.GSTNumber;
         gstBlock.style.display = 'block';
     } else {
@@ -797,9 +798,17 @@ function openPrintPreview(billData) {
     // 2. Populate Customer & Bill Info
     document.getElementById('invCustomerName').innerText = billData.customerName || billData.name;
     document.getElementById('invBillId').innerText = billData.billId || billData.id;
-    document.getElementById('invBillDate').innerText = (billData.billDate || billData.date).split(',')[0]; 
-    document.getElementById('invCustomerPhone').innerText = billData.customerPhone || billData.phone;
     
+    // FORMAT THE DATE PROPERLY
+    const rawDate = billData.billDate || billData.date;
+    const d = new Date(rawDate);
+    let niceDate = rawDate; 
+    if (!isNaN(d)) {
+        niceDate = d.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}) + ', ' + d.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+    }
+    document.getElementById('invBillDate').innerText = niceDate;
+    
+    document.getElementById('invCustomerPhone').innerText = billData.customerPhone || billData.phone;
     const custLoc = billData.customerLocation || billData.location;
     document.getElementById('invCustomerLocation').innerText = custLoc;
 
@@ -807,7 +816,6 @@ function openPrintPreview(billData) {
     const tbody = document.getElementById('invItemsBody');
     tbody.innerHTML = '';
     
-    // Parse cart if it's a saved string (from History) or an object array (from Live Generation)
     let itemsList = [];
     if (typeof billData.cart === 'string') {
         try { itemsList = JSON.parse(billData.cart); } catch(e) { itemsList = []; }
@@ -819,7 +827,6 @@ function openPrintPreview(billData) {
     
     itemsList.forEach((item, idx) => {
         const tr = document.createElement('tr');
-        // Handle variations between live save payload and history data payload
         const itemName = item.name || item.itemName; 
         const qty = item.qty;
         const rate = item.price;
@@ -838,34 +845,32 @@ function openPrintPreview(billData) {
         tbody.appendChild(tr);
     });
 
-    // 4. Totals, Math, and Split GST Logic
+    // 4. Totals, Math, and Strict GST Logic
     document.getElementById('invSubTotal').innerText = billData.subTotal;
     document.getElementById('invDiscount').innerText = billData.discount;
     document.getElementById('invPayable').innerText = billData.payable;
     document.getElementById('invTotalAmount').innerText = billData.payable;
     document.getElementById('invMethod').innerText = billData.method;
     document.getElementById('invDue').innerText = billData.due > 0 ? `₹${billData.due}` : 'N/A';
-    
-    // Number to Words
     document.getElementById('invAmountInWords').innerText = numberToWords(Math.round(billData.payable));
 
-    // Dynamic GST Calculation (CGST/SGST vs IGST)
+    // ONLY SHOW GST BLOCK IF SETTING EXISTS
     const gstCalcBlock = document.getElementById('invGstCalcBlock');
-    gstCalcBlock.innerHTML = ''; // Clear previous
+    gstCalcBlock.innerHTML = ''; 
     
-    const locString = custLoc.toLowerCase();
-    if (locString.includes('west bengal') || locString.includes('west bangal') || locString.includes('wb')) {
-        // Split Half & Half
-        const splitTax = (totalGstAmount / 2).toFixed(2);
-        gstCalcBlock.innerHTML = `
-            <div class="calc-row" style="color: #64748B;"><span>CGST</span> <span>${splitTax}</span></div>
-            <div class="calc-row" style="color: #64748B;"><span>SGST</span> <span>${splitTax}</span></div>
-        `;
-    } else {
-        // Full IGST
-        gstCalcBlock.innerHTML = `
-            <div class="calc-row" style="color: #64748B;"><span>IGST</span> <span>${totalGstAmount.toFixed(2)}</span></div>
-        `;
+    if (hasGst && totalGstAmount > 0) {
+        const locString = custLoc.toLowerCase();
+        if (locString.includes('west bengal') || locString.includes('west bangal') || locString.includes('wb')) {
+            const splitTax = (totalGstAmount / 2).toFixed(2);
+            gstCalcBlock.innerHTML = `
+                <div class="calc-row" style="color: #64748B;"><span>CGST</span> <span>${splitTax}</span></div>
+                <div class="calc-row" style="color: #64748B;"><span>SGST</span> <span>${splitTax}</span></div>
+            `;
+        } else {
+            gstCalcBlock.innerHTML = `
+                <div class="calc-row" style="color: #64748B;"><span>IGST</span> <span>${totalGstAmount.toFixed(2)}</span></div>
+            `;
+        }
     }
 
     // 5. PAID / DUE Stamp
@@ -878,6 +883,5 @@ function openPrintPreview(billData) {
         stampEl.className = "stamp stamp-paid";
     }
 
-    // Show the Screen
     switchTab('printPreviewScreen');
 }

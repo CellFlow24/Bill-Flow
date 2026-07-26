@@ -518,9 +518,17 @@ body {
 
 /* --- THE PRINT ENGINE --- */
 @media print {
-    body * { visibility: hidden; } /* Hides entire app */
+    @page {
+        margin: 0; /* This forces the browser to hide default dates and URLs! */
+    }
     
-    #printPreviewScreen, #printPreviewScreen * { visibility: visible; } /* Shows only preview */
+    body {
+        padding: 1cm; /* Adds a safe margin for the physical paper */
+    }
+
+    body * { visibility: hidden; } 
+    
+    #printPreviewScreen, #printPreviewScreen * { visibility: visible; } 
     
     #printPreviewScreen {
         position: absolute;
@@ -532,7 +540,7 @@ body {
         max-width: none;
     }
 
-    .no-print { display: none !important; } /* Strips the print button out of the PDF */
+    .no-print { display: none !important; } 
     
     .invoice-wrapper {
         padding: 0;

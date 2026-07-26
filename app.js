@@ -162,23 +162,21 @@ searchItemInput.addEventListener('input', (e) => {
 
 // Tab Switching Logic
 function switchTab(screenId, clickedButton) {
-    // Hide all screens
-    const screens = ['dashboardScreen', 'itemScreen', 'billingScreen', 'dueScreen', 'historyScreen'];
+    // Hide ALL screens (Notice 'printPreviewScreen' is now included in this list!)
+    const screens = ['dashboardScreen', 'itemScreen', 'billingScreen', 'dueScreen', 'historyScreen', 'printPreviewScreen'];
     screens.forEach(id => document.getElementById(id).classList.add('hidden'));
-    // Show the print preview screen cleanly
-    document.getElementById('printPreviewScreen').classList.remove('hidden');
     
-    // Show target screen
+    // Show the target screen
     document.getElementById(screenId).classList.remove('hidden');
 
-    // Update active state on buttons
+    // Update active state on bottom navigation buttons
     const navButtons = document.querySelectorAll('.nav-item');
     navButtons.forEach(btn => btn.classList.remove('active'));
     if (clickedButton) {
         clickedButton.classList.add('active');
     }
 
-    // --- NEW: Initialize Billing Screen Data ---
+    // --- Initialize Billing Screen Data ---
     if (screenId === 'billingScreen') {
         // Generates an ID like INV-492817
         document.getElementById('billId').value = 'INV-' + Date.now().toString().slice(-6); 

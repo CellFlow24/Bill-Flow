@@ -292,6 +292,119 @@
         </div>
     </div>
 
+    <!-- Invoice Print Preview Screen -->
+    <div id="printPreviewScreen" class="screen-container hidden" style="max-width: 800px;">
+        <div class="app-header no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button onclick="switchTab('historyScreen')" class="btn-primary" style="width: auto; padding: 10px 20px; background: var(--text-light);">Back</button>
+            <button onclick="window.print()" class="btn-primary" style="width: auto; padding: 10px 30px;">Print / Save PDF</button>
+        </div>
+
+        <!-- The Actual Bill Layout -->
+        <div id="invoiceCanvas" class="invoice-wrapper">
+            <!-- Header -->
+            <div class="inv-header">
+                <div class="inv-logo-box">
+                    <img src="comp-logo.png" alt="Company Logo" class="inv-logo">
+                </div>
+                <div class="inv-company-details">
+                    <h2 id="invCompanyName">Company Name</h2>
+                    <p id="invCompanyAddress">Address</p>
+                    <p>Visit us at: <span id="invCompanyWebsite"></span> &nbsp;|&nbsp; Email: <span id="invCompanyEmail"></span></p>
+                    <p>Phone: <span id="invCompanyPhone"></span></p>
+                </div>
+            </div>
+
+            <!-- Customer & Bill Info -->
+            <div class="inv-info-grid">
+                <div class="inv-info-col border-right border-bottom">
+                    <strong>NAME</strong> <span id="invCustomerName" style="margin-left: 20px;"></span>
+                </div>
+                <div class="inv-info-col border-bottom">
+                    <strong>BILL No.</strong> <span id="invBillId" style="margin-left: 10px;"></span><br>
+                    <strong>DATE</strong> <span id="invBillDate" style="margin-left: 10px;"></span><br>
+                    <strong>PHONE</strong> <span id="invCustomerPhone" style="margin-left: 10px;"></span>
+                </div>
+                <div class="inv-info-col border-right border-bottom">
+                    <strong>ADDRESS</strong> <span id="invCustomerLocation" style="margin-left: 20px;"></span>
+                </div>
+                <div class="inv-info-col border-bottom" style="background: #f8fafc;">
+                    <strong style="display: block; text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px;">INVOICE</strong>
+                    <div id="invGstBlock"><strong>GST NO</strong> <span id="invGstNumber" style="margin-left: 10px;"></span></div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No.</th>
+                        <th style="width: 45%;">Product Name</th>
+                        <th style="width: 15%;">Quantity</th>
+                        <th style="width: 15%;">Rate</th>
+                        <th style="width: 20%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="invItemsBody">
+                    <!-- Items injected here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" style="text-align: right;">Total</th>
+                        <th id="invTotalAmount">0.00</th>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Bottom Section Grid -->
+            <div class="inv-footer-grid">
+                <!-- Bank Details -->
+                <div class="inv-bank-box border-right">
+                    <strong>Our Banker:</strong><br><br>
+                    <span id="invBankName"></span><br>
+                    A/C Number - <span id="invAccountNumber"></span><br>
+                    IFSC Code - <span id="invIFSC"></span><br>
+                    UPI ID: <span id="invUPI"></span>
+                </div>
+                
+                <!-- Status Stamp -->
+                <div class="inv-stamp-box border-right">
+                    <div id="invStatusStamp" class="stamp">PAID</div>
+                </div>
+                
+                <!-- Tax & Calculation -->
+                <div class="inv-calc-box">
+                    <div id="invGstCalcBlock">
+                        <!-- Dynamic CGST/SGST or IGST injected here -->
+                    </div>
+                    <div class="calc-row"><span>Sub Total</span> <span id="invSubTotal"></span></div>
+                    <div class="calc-row"><span>Discount</span> <span id="invDiscount"></span></div>
+                    <div class="calc-row" style="border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">
+                        <span>TOTAL</span> <span id="invPayable"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Very Bottom Row -->
+            <div class="inv-bottom-row">
+                <div class="border-right" style="width: 30%; padding: 5px;">
+                    <strong>Payment Method:</strong> <span id="invMethod"></span>
+                </div>
+                <div class="border-right" style="width: 33%; padding: 5px;">
+                    <strong>Due Amount:</strong> <span id="invDue" style="color: red;"></span>
+                </div>
+                <div style="width: 37%; padding: 5px; font-weight: bold; font-size: 0.9rem;" id="invAmountInWords">
+                    <!-- Number in words -->
+                </div>
+            </div>
+            
+            <!-- Confidential Note -->
+            <div class="inv-note-row" id="invNoteContainer" style="display: flex; justify-content: space-between; padding: 15px 5px; font-weight: bold; font-size: 0.85rem;">
+                <div id="invNoteText" style="color: var(--navy-blue); max-width: 60%;"></div>
+                <div style="text-align: right; margin-top: 20px;">THANK YOU FOR CHOOSING US</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Navigation Bar -->
     <nav id="bottomNav" class="bottom-nav hidden">
         <button class="nav-item active" onclick="switchTab('dashboardScreen', this)">Home</button>

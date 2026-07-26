@@ -519,11 +519,13 @@ body {
 /* --- THE PRINT ENGINE --- */
 @media print {
     @page {
-        margin: 0; /* This forces the browser to hide default dates and URLs! */
+        size: auto;
+        margin: 5mm; /* Restores safe margins so top/bottom borders aren't cropped */
     }
     
     body {
-        padding: 1cm; /* Adds a safe margin for the physical paper */
+        padding: 0;
+        background: #fff;
     }
 
     body * { visibility: hidden; } 
@@ -545,5 +547,6 @@ body {
     .invoice-wrapper {
         padding: 0;
         box-shadow: none;
+        border: none;
     }
 }

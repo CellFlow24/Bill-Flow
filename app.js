@@ -666,7 +666,7 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
     allBills.forEach(bill => {
         const isDue = parseFloat(bill.due) > 0;
         
-        // Format the ugly Date string into a beautiful format (e.g., "26 Jul 2026, 11:38 AM")
+        // Format the ugly Date string into a beautiful format
         const d = new Date(bill.date);
         let niceDate = bill.date; 
         if (!isNaN(d)) {
@@ -693,15 +693,15 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
         `;
 
         // Filter Logic for History Screen
-        const histMatch = bill[historySearchType.value].toLowerCase().includes(filterHistoryStr.toLowerCase());
+        const histMatch = bill[historySearchType].toLowerCase().includes(filterHistoryStr.toLowerCase());
         if (histMatch) {
             historyListView.innerHTML += cardHTML;
             hasHistory = true;
         }
 
-        // Filter Logic for Due Screen (Only show if it has a due amount)
+        // Filter Logic for Due Screen
         if (isDue) {
-            const dueMatch = bill[dueSearchType.value].toLowerCase().includes(filterDueStr.toLowerCase());
+            const dueMatch = bill[dueSearchType].toLowerCase().includes(filterDueStr.toLowerCase());
             if (dueMatch) {
                 dueListView.innerHTML += cardHTML;
                 hasDue = true;

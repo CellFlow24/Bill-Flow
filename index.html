@@ -23,6 +23,61 @@
     <!-- Custom Toast Notification -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- Top App Bar (Hamburger Menu) -->
+    <div id="topAppBar" class="top-app-bar hidden no-print">
+        <div class="menu-icon" onclick="toggleMenu()">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <img src="logo.png" alt="BillFlow" class="top-bar-logo">
+        <div style="width: 24px;"></div> <!-- Spacer to center logo -->
+    </div>
+
+    <!-- Side Slide-out Menu -->
+    <div id="sideMenu" class="side-menu no-print">
+        <div class="menu-header">
+            <img src="logo.png" alt="BillFlow Logo" style="width: 120px;">
+            <p id="menuUserName" style="font-weight: bold; margin-top: 10px; color: var(--navy-blue);"></p>
+        </div>
+        <div class="menu-items">
+            <a onclick="switchTab('dashboardScreen'); toggleMenu()">Home / Dashboard</a>
+            <a onclick="switchTab('itemScreen'); toggleMenu()">Item Management</a>
+            <a onclick="switchTab('billingScreen'); toggleMenu()">Create New Invoice</a>
+            <a onclick="switchTab('dueScreen'); toggleMenu()">Due Bills</a>
+            <a onclick="switchTab('historyScreen'); toggleMenu()">Bill History</a>
+        </div>
+    </div>
+    <div id="menuOverlay" class="menu-overlay hidden no-print" onclick="toggleMenu()"></div>
+
+    <!-- Clear Due Pop-up Modal -->
+    <div id="clearDueModal" class="modal-overlay hidden no-print">
+        <div class="modal-box">
+            <h3 class="card-title">Clear Due Payment</h3>
+            <p style="margin-bottom: 15px; color: var(--text-light); font-size: 0.9rem;">Bill ID: <strong id="cdBillId" style="color: var(--navy-blue);"></strong></p>
+            
+            <div class="input-group">
+                <label>Amount Paying (₹)</label>
+                <input type="number" id="cdAmount" min="1" step="1">
+            </div>
+            
+            <div class="input-group" style="position: relative;">
+                <label>Payment Method</label>
+                <input type="text" id="cdMethod" class="custom-select" value="CASH" readonly style="cursor: pointer;">
+                <div id="cdMethodDropdown" class="dropdown-content hidden" style="top: auto; bottom: 100%; margin-bottom: 5px; box-shadow: 0px -8px 16px 0px rgba(0,0,0,0.1);">
+                    <div class="dropdown-item" onclick="selectCdMethod('CASH')">CASH</div>
+                    <div class="dropdown-item" onclick="selectCdMethod('UPI')">UPI</div>
+                    <div class="dropdown-item" onclick="selectCdMethod('BANK TRANSFER')">BANK TRANSFER</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-primary" style="background: #64748B;" onclick="closeClearDueModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitClearDue()">Update Bill</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Login Screen -->
     <div id="loginScreen" class="screen-container">
         <div class="auth-box">
@@ -411,14 +466,7 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
-    <nav id="bottomNav" class="bottom-nav hidden">
-        <button class="nav-item active" onclick="switchTab('dashboardScreen', this)">Home</button>
-        <button class="nav-item" onclick="switchTab('itemScreen', this)">Items</button>
-        <button class="nav-item" onclick="switchTab('billingScreen', this)">Bill</button>
-        <button class="nav-item" onclick="switchTab('dueScreen', this)">Dues</button>
-        <button class="nav-item" onclick="switchTab('historyScreen', this)">History</button>
-    </nav>
+    
 
     <script src="app.js"></script>
 

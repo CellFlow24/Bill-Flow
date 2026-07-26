@@ -285,3 +285,37 @@ body {
     color: var(--tech-blue);
     background: rgba(0, 82, 255, 0.1);
 }
+
+/* Custom Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: -100px; /* Hidden off-screen initially */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    background: var(--navy-blue);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+    min-width: 250px;
+}
+
+.toast-container.show {
+    top: 30px;
+    opacity: 1;
+}
+
+.toast-success {
+    border-bottom: 4px solid var(--trust-green);
+}
+
+.toast-error {
+    border-bottom: 4px solid var(--error-red);
+}

@@ -160,31 +160,25 @@ searchItemInput.addEventListener('input', (e) => {
     renderItemList(filteredItems);
 });
 
-// Tab Switching Logic
-function switchTab(screenId, clickedButton) {
-    // Hide ALL screens (Notice 'printPreviewScreen' is now included in this list!)
+// --- Menu & Screen Logic ---
+function toggleMenu() {
+    document.getElementById('sideMenu').classList.toggle('open');
+    document.getElementById('menuOverlay').classList.toggle('hidden');
+}
+
+function switchTab(screenId) {
     const screens = ['dashboardScreen', 'itemScreen', 'billingScreen', 'dueScreen', 'historyScreen', 'printPreviewScreen'];
     screens.forEach(id => document.getElementById(id).classList.add('hidden'));
     
-    // Show the target screen
     document.getElementById(screenId).classList.remove('hidden');
-
-    // Update active state on bottom navigation buttons
-    const navButtons = document.querySelectorAll('.nav-item');
-    navButtons.forEach(btn => btn.classList.remove('active'));
-    if (clickedButton) {
-        clickedButton.classList.add('active');
-    }
-
-    // --- Initialize Billing Screen Data ---
+    
+    // Initialize Billing Screen Data
     if (screenId === 'billingScreen') {
-        // Generates an ID like INV-492817
         document.getElementById('billId').value = 'INV-' + Date.now().toString().slice(-6); 
-        // Formats date/time accurately for India locale
         document.getElementById('billDate').value = new Date().toLocaleString('en-IN');
-        
-        calculateBill(); // Ensure math fields are reset to zero
+        calculateBill();
     }
+    window.scrollTo(0, 0); // Scroll to top when changing screens
 }
 
 // Show/Hide Loader
@@ -238,7 +232,8 @@ loginForm.addEventListener('submit', async (e) => {
                 // Route to dashboard
                 document.getElementById('welcomeMessage').innerText = `Hello, ${data.name}!`;
                 showScreen(dashboardScreen);
-                document.getElementById('bottomNav').classList.remove('hidden');
+                document.getElementById('topAppBar').classList.remove('hidden');
+                document.getElementById('menuUserName').innerText = `Logged in as: ${data.name}`;
                 
                 // Fetch data in the background!
                 loadDashboardStats();
@@ -683,21 +678,27 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
     let hasDue = false;
     let hasHistory = false;
 
-    // Helper to generate the card so we can inject the specific origin screen
-    const createCard = (bill, origin, niceDate, creatorText, isDue) => `
+    // Helper to generate the card so we can inject the specific origin screen and Clear Button
+    const createCard = (bill, origin, niceDate, creatorText, isDue) => {
+        // Create the clear button HTML (Stops click from opening PDF)
+        const clearBtn = isDue ? `<button onclick='event.stopPropagation(); openClearDueModal("${bill.id}", ${bill.due})' style="padding: 5px 12px; background: var(--tech-blue); color: #fff; border: none; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-left: 10px; box-shadow: 0 2px 4px rgba(0,82,255,0.2);">Clear Due</button>` : '';
+        
+        return `
         <div class="bill-card" onclick='openPrintPreview(${JSON.stringify(bill).replace(/'/g, "&apos;")}, "${origin}")' style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
                 <span style="font-size: 0.75rem; color: var(--text-light); text-align: right;">${niceDate}${creatorText}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
                 <span style="color: var(--text-light); font-family: monospace;">${bill.id}</span>
-                <strong style="color: ${isDue ? 'var(--error-red)' : 'var(--trust-green)'};">
+                <strong style="color: ${isDue ? 'var(--error-red)' : 'var(--trust-green)'}; display: flex; align-items: center;">
                     ${isDue ? 'Due: ₹' + bill.due : 'Paid: ₹' + bill.paid}
+                    ${clearBtn}
                 </strong>
             </div>
         </div>
-    `;
+        `;
+    };
 
     allBills.forEach(bill => {
         const isDue = parseFloat(bill.due) > 0;
@@ -726,8 +727,77 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
             }
         }
     });
+    
     if (!hasDue) dueListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No due bills found.</p>';
     if (!hasHistory) historyListView.innerHTML = '<p style="text-align:center; color: #64748B; margin-top: 20px;">No bills found.</p>';
+}
+
+// --- Clear Due Modal Logic ---
+const cdMethodInput = document.getElementById('cdMethod');
+const cdDropdown = document.getElementById('cdMethodDropdown');
+let currentClearBillId = "";
+
+cdMethodInput.addEventListener('click', (e) => {
+    e.stopPropagation();
+    cdDropdown.classList.toggle('hidden');
+});
+
+function selectCdMethod(method) {
+    cdMethodInput.value = method;
+    cdDropdown.classList.add('hidden');
+}
+
+// Ensure clicking outside closes this new dropdown
+document.addEventListener('click', (e) => {
+    if (e.target !== cdMethodInput && cdDropdown) cdDropdown.classList.add('hidden');
+});
+
+function openClearDueModal(billId, dueAmount) {
+    currentClearBillId = billId;
+    document.getElementById('cdBillId').innerText = billId;
+    document.getElementById('cdAmount').value = dueAmount; // Default to full due amount
+    document.getElementById('clearDueModal').classList.remove('hidden');
+}
+
+function closeClearDueModal() {
+    document.getElementById('clearDueModal').classList.add('hidden');
+}
+
+async function submitClearDue() {
+    const payAmount = document.getElementById('cdAmount').value;
+    
+    if (!payAmount || payAmount <= 0) {
+        showToast("Enter a valid amount.", "error");
+        return;
+    }
+    
+    showLoader();
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'clearDue',
+                billId: currentClearBillId,
+                amountPaid: payAmount,
+                clearDate: new Date().toLocaleString('en-IN')
+            }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showToast("Payment recorded successfully!", "success");
+            closeClearDueModal();
+            loadBills(); // Refresh lists
+            loadDashboardStats(); // Update dashboard money stats
+        } else {
+            showToast("Failed to clear due.", "error");
+        }
+    } catch (error) {
+        showToast("Connection error.", "error");
+    } finally {
+        hideLoader();
+    }
 }
 
 // Attach Search Listeners
@@ -879,15 +949,19 @@ function openPrintPreview(billData, origin = 'historyScreen') {
         }
     }
 
-    // 5. PAID / DUE Stamp
+    // 5. PAID / DUE / CLEARED Stamp
     const stampEl = document.getElementById('invStatusStamp');
     if (parseFloat(billData.due) > 0) {
         stampEl.innerText = "DUE";
         stampEl.className = "stamp stamp-due";
+    } else if (billData.clearDate && billData.clearDate.trim() !== '') {
+        stampEl.innerText = "CLEARED";
+        stampEl.className = "stamp stamp-paid"; // Uses the green styling
+        // Show clear date on PDF
+        document.getElementById('invMethod').innerText = billData.method + ` (Cleared: ${billData.clearDate.split(',')[0]})`;
     } else {
         stampEl.innerText = "PAID";
         stampEl.className = "stamp stamp-paid";
     }
-
     switchTab('printPreviewScreen');
 }

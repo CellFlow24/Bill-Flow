@@ -1,4 +1,4 @@
-const CACHE_NAME = 'billflow-v18';
+const CACHE_NAME = 'billflow-v20';
 const ASSETS = [
   './',
   './index.html',

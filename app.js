@@ -19,6 +19,27 @@ let currentUserId = "";
 // Global State for Data
 let inventoryItems = [];
 
+// Toast Notification Engine
+const toastContainer = document.getElementById('toastContainer');
+
+function showToast(message, type = 'success') {
+    toastContainer.innerText = message;
+    
+    // Reset classes and add the specific type (success or error)
+    toastContainer.className = 'toast-container';
+    toastContainer.classList.add(`toast-${type}`);
+    
+    // Small delay to ensure CSS transition triggers if called back-to-back
+    setTimeout(() => {
+        toastContainer.classList.add('show');
+    }, 10);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        toastContainer.classList.remove('show');
+    }, 3000);
+}
+
 // --- Dashboard Logic ---
 async function loadDashboardStats() {
     try {
@@ -70,17 +91,16 @@ addItemForm.addEventListener('submit', async (e) => {
         const data = await response.json();
         if (data.success) {
             addItemForm.reset();
-            alert("Item saved successfully!");
+            showToast("Item saved successfully!", "success");
             await loadItems(); // Refresh the list automatically
         } else {
-            alert("Failed to save item.");
+            showToast("Failed to save item.", "error");
         }
     } catch (error) {
-        alert("Connection error.");
+        showToast("Connection error.", "error");
     } finally {
         hideLoader();
     }
-});
 
 // Load Items from Server
 async function loadItems() {
@@ -259,7 +279,7 @@ changePasswordForm.addEventListener('submit', async (e) => {
 
         if (data.success) {
             // Password changed, send them back to login to verify
-            alert("Password updated successfully. Please log in with your new password.");
+            showToast("Password updated! Please log in.", "success");
             document.getElementById('userId').value = currentUserId;
             document.getElementById('password').value = "";
             showScreen(loginScreen);

@@ -133,8 +133,117 @@
         </div>
     </div>
 
-    <!-- Screens for later phases (Hidden for now) -->
-    <div id="billingScreen" class="screen-container hidden"><h2 class="section-title">Billing Area</h2></div>
+    <!-- Billing Screen -->
+    <div id="billingScreen" class="screen-container hidden">
+        <div class="app-header">
+            <h2 class="section-title">New Invoice</h2>
+        </div>
+
+        <form id="billingForm">
+            <!-- Part 1: Customer Details -->
+            <div class="card-box">
+                <h3 class="card-title">Customer Details</h3>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Bill ID</label>
+                        <input type="text" id="billId" readonly style="background: #F8FAFC; color: #64748B;">
+                    </div>
+                    <div class="input-group">
+                        <label>Date & Time</label>
+                        <input type="text" id="billDate" readonly style="background: #F8FAFC; color: #64748B;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="customerName" required autocomplete="off">
+                </div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="customerPhone" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Location</label>
+                        <input type="text" id="customerLocation" required autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 2: Item Selection -->
+            <div class="card-box" style="margin-top: 15px;">
+                <h3 class="card-title">Add Items</h3>
+                <div class="input-group" style="position: relative;">
+                    <label>Search Inventory</label>
+                    <input type="text" id="billSearchItem" autocomplete="off" placeholder="Type item name...">
+                    <div id="billItemDropdown" class="dropdown-content hidden"></div>
+                </div>
+                
+                <!-- Current Bill Items Table -->
+                <div class="cart-container">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #64748B;">No items added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Part 3: Calculation & Payment -->
+            <div class="card-box" style="margin-top: 15px;">
+                <h3 class="card-title">Payment Summary</h3>
+                
+                <div class="summary-row">
+                    <span>Sub Total:</span>
+                    <span id="summarySubTotal">₹0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Total GST:</span>
+                    <span id="summaryGst">₹0.00</span>
+                </div>
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>Discount (₹)</label>
+                    <input type="number" id="billDiscount" value="0" min="0" step="1">
+                </div>
+                <div class="summary-row payable-row">
+                    <span>Payable Amount:</span>
+                    <span id="summaryPayable">₹0.00</span>
+                </div>
+                
+                <div class="input-grid" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <label>Paid (₹)</label>
+                        <input type="number" id="billPaid" value="0" min="0" step="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Due (₹)</label>
+                        <input type="number" id="billDue" value="0" readonly style="background: #F8FAFC; color: var(--error-red); font-weight: bold;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Payment Method</label>
+                    <select id="billMethod" required class="custom-select">
+                        <option value="CASH">CASH</option>
+                        <option value="UPI">UPI</option>
+                        <option value="BANK TRANSFER">BANK TRANSFER</option>
+                        <option value="CARD">CARD</option>
+                    </select>
+                </div>
+                
+                <button type="button" id="saveBillBtn" class="btn-primary" style="margin-top: 10px;">Save & Generate Bill</button>
+            </div>
+        </form>
+    </div>
+    
     <div id="dueScreen" class="screen-container hidden"><h2 class="section-title">Due Bills</h2></div>
     <div id="historyScreen" class="screen-container hidden"><h2 class="section-title">History</h2></div>
 

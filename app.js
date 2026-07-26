@@ -101,6 +101,7 @@ addItemForm.addEventListener('submit', async (e) => {
     } finally {
         hideLoader();
     }
+});    
 
 // Load Items from Server
 async function loadItems() {

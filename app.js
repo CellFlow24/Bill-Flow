@@ -586,7 +586,8 @@ saveBillBtn.addEventListener('click', async () => {
             loadDashboardStats(); 
             loadBills();
             
-            // Note: The PDF trigger will be added here in Phase 6!
+            // Trigger the Print Preview immediately using the payload we just built
+            openPrintPreview(billPayload);
         } else {
             showToast("Failed to save bill.", "error");
         }
@@ -695,9 +696,9 @@ function renderBills(filterDueStr = '', filterHistoryStr = '') {
         // Add the creator's name if it exists in the database
         const creatorText = bill.createdBy ? ` • By ${bill.createdBy}` : '';
 
-        // Build the sleek card UI
+        // Build the sleek card UI (ADDED ONCLICK EVENT HERE)
         const cardHTML = `
-            <div class="bill-card" style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
+            <div class="bill-card" onclick='openPrintPreview(${JSON.stringify(bill).replace(/'/g, "&apos;")})' style="padding: 15px; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: var(--white);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <strong style="color: var(--navy-blue); font-size: 1.05rem;">${bill.name}</strong>
                     <span style="font-size: 0.75rem; color: var(--text-light); text-align: right;">${niceDate}${creatorText}</span>
@@ -736,3 +737,147 @@ document.getElementById('dueSearchInput').addEventListener('input', (e) => rende
 document.getElementById('historySearchInput').addEventListener('input', (e) => renderBills(document.getElementById('dueSearchInput').value, e.target.value));
 document.getElementById('dueSearchType').addEventListener('change', () => renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value));
 document.getElementById('historySearchType').addEventListener('change', () => renderBills(document.getElementById('dueSearchInput').value, document.getElementById('historySearchInput').value));
+
+// --- PDF Generator Engine ---
+
+// Helper: Convert Number to Words (Indian Rupee Format)
+function numberToWords(num) {
+    const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+    const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+    
+    if ((num = num.toString()).length > 9) return 'Overflow';
+    let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return; let str = '';
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Only' : 'Only';
+    return str.toUpperCase();
+}
+
+function openPrintPreview(billData) {
+    // 1. Populate Company Settings
+    document.getElementById('invCompanyName').innerText = companySettings.CompanyName || '';
+    document.getElementById('invCompanyAddress').innerText = companySettings.CompanyAddress || '';
+    document.getElementById('invCompanyWebsite').innerText = companySettings.CompanyWebsite || '';
+    document.getElementById('invCompanyEmail').innerText = companySettings.CompanyEmail || '';
+    document.getElementById('invCompanyPhone').innerText = companySettings.CompanyPhone || '';
+
+    // Handle GST Field Visibility
+    const gstBlock = document.getElementById('invGstBlock');
+    if (companySettings.GSTNumber && companySettings.GSTNumber.trim() !== '') {
+        document.getElementById('invGstNumber').innerText = companySettings.GSTNumber;
+        gstBlock.style.display = 'block';
+    } else {
+        gstBlock.style.display = 'none'; // Hides entirely if blank
+    }
+
+    // Handle Bank Field Visibility
+    const bankName = companySettings.BankName || '';
+    if (bankName.trim() === '') {
+        document.querySelector('.inv-bank-box').innerHTML = '<strong>Payment Options:</strong><br><br>Cash or UPI accepted.';
+    } else {
+        document.getElementById('invBankName').innerText = bankName;
+        document.getElementById('invAccountNumber').innerText = companySettings.AccountNumber || '';
+        document.getElementById('invIFSC').innerText = companySettings.IFSCCode || '';
+        document.getElementById('invUPI').innerText = companySettings.UPIID || '';
+    }
+
+    // Handle Note Visibility
+    const noteText = companySettings.Note || '';
+    const noteContainer = document.getElementById('invNoteContainer');
+    if (noteText.trim() !== '') {
+        document.getElementById('invNoteText').innerText = noteText;
+        noteContainer.style.display = 'flex';
+    } else {
+        noteContainer.style.display = 'none';
+    }
+
+    // 2. Populate Customer & Bill Info
+    document.getElementById('invCustomerName').innerText = billData.customerName || billData.name;
+    document.getElementById('invBillId').innerText = billData.billId || billData.id;
+    document.getElementById('invBillDate').innerText = (billData.billDate || billData.date).split(',')[0]; 
+    document.getElementById('invCustomerPhone').innerText = billData.customerPhone || billData.phone;
+    
+    const custLoc = billData.customerLocation || billData.location;
+    document.getElementById('invCustomerLocation').innerText = custLoc;
+
+    // 3. Populate Items Table
+    const tbody = document.getElementById('invItemsBody');
+    tbody.innerHTML = '';
+    
+    // Parse cart if it's a saved string (from History) or an object array (from Live Generation)
+    let itemsList = [];
+    if (typeof billData.cart === 'string') {
+        try { itemsList = JSON.parse(billData.cart); } catch(e) { itemsList = []; }
+    } else {
+        itemsList = billData.cart || [];
+    }
+
+    let totalGstAmount = 0;
+    
+    itemsList.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        // Handle variations between live save payload and history data payload
+        const itemName = item.name || item.itemName; 
+        const qty = item.qty;
+        const rate = item.price;
+        const itemTot = item.itemTotal || (parseFloat(rate) * qty).toFixed(2);
+        const itemGst = parseFloat(item.gstAmount || 0);
+        
+        totalGstAmount += itemGst;
+
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td style="text-align: left;">${itemName}</td>
+            <td>${qty}</td>
+            <td>${rate}</td>
+            <td>${itemTot}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // 4. Totals, Math, and Split GST Logic
+    document.getElementById('invSubTotal').innerText = billData.subTotal;
+    document.getElementById('invDiscount').innerText = billData.discount;
+    document.getElementById('invPayable').innerText = billData.payable;
+    document.getElementById('invTotalAmount').innerText = billData.payable;
+    document.getElementById('invMethod').innerText = billData.method;
+    document.getElementById('invDue').innerText = billData.due > 0 ? `₹${billData.due}` : 'N/A';
+    
+    // Number to Words
+    document.getElementById('invAmountInWords').innerText = numberToWords(Math.round(billData.payable));
+
+    // Dynamic GST Calculation (CGST/SGST vs IGST)
+    const gstCalcBlock = document.getElementById('invGstCalcBlock');
+    gstCalcBlock.innerHTML = ''; // Clear previous
+    
+    const locString = custLoc.toLowerCase();
+    if (locString.includes('west bengal') || locString.includes('west bangal') || locString.includes('wb')) {
+        // Split Half & Half
+        const splitTax = (totalGstAmount / 2).toFixed(2);
+        gstCalcBlock.innerHTML = `
+            <div class="calc-row" style="color: #64748B;"><span>CGST</span> <span>${splitTax}</span></div>
+            <div class="calc-row" style="color: #64748B;"><span>SGST</span> <span>${splitTax}</span></div>
+        `;
+    } else {
+        // Full IGST
+        gstCalcBlock.innerHTML = `
+            <div class="calc-row" style="color: #64748B;"><span>IGST</span> <span>${totalGstAmount.toFixed(2)}</span></div>
+        `;
+    }
+
+    // 5. PAID / DUE Stamp
+    const stampEl = document.getElementById('invStatusStamp');
+    if (parseFloat(billData.due) > 0) {
+        stampEl.innerText = "DUE";
+        stampEl.className = "stamp stamp-due";
+    } else {
+        stampEl.innerText = "PAID";
+        stampEl.className = "stamp stamp-paid";
+    }
+
+    // Show the Screen
+    switchTab('printPreviewScreen');
+}

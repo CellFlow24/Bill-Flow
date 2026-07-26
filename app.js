@@ -765,6 +765,7 @@ function closeClearDueModal() {
 
 async function submitClearDue() {
     const payAmount = document.getElementById('cdAmount').value;
+    const clearMethod = document.getElementById('cdMethod').value; // Capture the new method
     
     if (!payAmount || payAmount <= 0) {
         showToast("Enter a valid amount.", "error");
@@ -779,6 +780,7 @@ async function submitClearDue() {
                 action: 'clearDue',
                 billId: currentClearBillId,
                 amountPaid: payAmount,
+                clearMethod: clearMethod, // Send the new method to the backend
                 clearDate: new Date().toLocaleString('en-IN')
             }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
@@ -788,8 +790,17 @@ async function submitClearDue() {
         if (data.success) {
             showToast("Payment recorded successfully!", "success");
             closeClearDueModal();
-            loadBills(); // Refresh lists
-            loadDashboardStats(); // Update dashboard money stats
+            
+            // AWAIT the fresh data to download from Google Sheets
+            await loadBills(); 
+            loadDashboardStats(); 
+            
+            // Find the freshly updated bill and open the print preview immediately
+            const updatedBill = allBills.find(b => b.id === currentClearBillId);
+            if (updatedBill) {
+                openPrintPreview(updatedBill, 'dueScreen');
+            }
+            
         } else {
             showToast("Failed to clear due.", "error");
         }

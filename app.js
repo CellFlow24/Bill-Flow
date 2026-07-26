@@ -483,3 +483,90 @@ customerPhone.addEventListener('input', function(e) {
 customerPhone.addEventListener('focus', function() {
     this.style.border = "1px solid #CBD5E1";
 });
+
+// --- Save & Generate Bill Logic ---
+const saveBillBtn = document.getElementById('saveBillBtn');
+
+saveBillBtn.addEventListener('click', async () => {
+    // 1. Validate the form
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const location = document.getElementById('customerLocation').value.trim();
+
+    if (!name || phone.length !== 10 || !location) {
+        showToast("Please fill all customer details correctly.", "error");
+        return;
+    }
+    if (currentCart.length === 0) {
+        showToast("Cannot save an empty bill. Add items.", "error");
+        return;
+    }
+
+    // 2. Gather all data
+    const billPayload = {
+        action: 'saveBill',
+        billId: document.getElementById('billId').value,
+        billDate: document.getElementById('billDate').value,
+        customerName: name,
+        customerPhone: phone,
+        customerLocation: location,
+        subTotal: document.getElementById('summarySubTotal').innerText.replace('₹', ''),
+        discount: document.getElementById('billDiscount').value || 0,
+        payable: document.getElementById('summaryPayable').innerText.replace('₹', ''),
+        paid: document.getElementById('billPaid').value || 0,
+        due: document.getElementById('billDue').value,
+        method: document.getElementById('billMethod').value,
+        
+        // Map the cart to calculate precise GST per item for the database
+        cart: currentCart.map(item => {
+            const base = parseFloat(item.price);
+            const gst = parseFloat(item.gst);
+            const baseTotal = base * item.qty;
+            const gstTotal = baseTotal * (gst / 100);
+            
+            return {
+                name: item.name,
+                qty: item.qty,
+                price: item.finalPrice, // Using final price as display price
+                gstAmount: gstTotal.toFixed(2),
+                itemTotal: (baseTotal + gstTotal).toFixed(2)
+            };
+        })
+    };
+
+    // 3. Send to Google Sheets
+    showLoader();
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(billPayload),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showToast("Bill Generated Successfully!", "success");
+            
+            // Reset the form for the next customer
+            document.getElementById('billingForm').reset();
+            currentCart = [];
+            renderCart();
+            calculateBill();
+            
+            // Generate a fresh ID and timestamp immediately
+            document.getElementById('billId').value = 'INV-' + Date.now().toString().slice(-6); 
+            document.getElementById('billDate').value = new Date().toLocaleString('en-IN');
+            
+            // Refresh Dashboard numbers in the background
+            loadDashboardStats(); 
+            
+            // Note: The PDF trigger will be added here in Phase 6!
+        } else {
+            showToast("Failed to save bill.", "error");
+        }
+    } catch (error) {
+        showToast("Connection error.", "error");
+    } finally {
+        hideLoader();
+    }
+});

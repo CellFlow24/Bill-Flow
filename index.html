@@ -248,8 +248,44 @@
         </form>
     </div>
     
-    <div id="dueScreen" class="screen-container hidden"><h2 class="section-title">Due Bills</h2></div>
-    <div id="historyScreen" class="screen-container hidden"><h2 class="section-title">History</h2></div>
+    <!-- Due Bills Screen -->
+    <div id="dueScreen" class="screen-container hidden">
+        <div class="app-header">
+            <h2 class="section-title">Due Bills</h2>
+        </div>
+        <div class="card-box">
+            <input type="text" id="dueSearchInput" class="search-bar" placeholder="Search due bills..." autocomplete="off">
+            <div class="input-group" style="margin-bottom: 15px;">
+                <!-- Reusing our custom CSS class for the dropdown -->
+                <select id="dueSearchType" class="custom-select" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <option value="name">Search by Name</option>
+                    <option value="id">Search by Bill ID</option>
+                </select>
+            </div>
+            <div id="dueListView" class="item-list" style="max-height: 60vh;">
+                <!-- Due bills inject here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- History Screen -->
+    <div id="historyScreen" class="screen-container hidden">
+        <div class="app-header">
+            <h2 class="section-title">Bill History</h2>
+        </div>
+        <div class="card-box">
+            <input type="text" id="historySearchInput" class="search-bar" placeholder="Search all bills..." autocomplete="off">
+            <div class="input-group" style="margin-bottom: 15px;">
+                <select id="historySearchType" class="custom-select" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <option value="name">Search by Name</option>
+                    <option value="id">Search by Bill ID</option>
+                </select>
+            </div>
+            <div id="historyListView" class="item-list" style="max-height: 60vh;">
+                <!-- All bills inject here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Bottom Navigation Bar -->
     <nav id="bottomNav" class="bottom-nav hidden">

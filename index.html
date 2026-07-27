@@ -384,7 +384,7 @@
                         <strong>ADDRESS</strong> <span id="invCustomerLocation" style="margin-left: 20px;"></span>
                     </div>
                     <div class="inv-info-col border-bottom" style="background: #f8fafc;">
-                        <strong style="display: block; text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px;">INVOICE</strong>
+                        <strong id="invDocType" style="display: block; text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px;">INVOICE</strong>
                         <div id="invGstBlock"><strong>GST NO</strong> <span id="invGstNumber" style="margin-left: 10px;"></span></div>
                     </div>
                 </div>
@@ -394,10 +394,11 @@
                     <thead>
                         <tr>
                             <th style="width: 5%;">No.</th>
-                            <th style="width: 45%;">Product Name</th>
+                            <th style="width: 40%;">Product Name</th>
                             <th style="width: 15%;">Quantity</th>
                             <th style="width: 15%;">Rate</th>
-                            <th style="width: 20%;">Total</th>
+                            <th style="width: 10%;">GST</th>
+                            <th style="width: 15%;">Total</th>
                         </tr>
                     </thead>
                     <tbody id="invItemsBody">
@@ -405,12 +406,12 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" style="text-align: right;">Total</th>
+                            <th colspan="5" style="text-align: right;">Total</th>
                             <th id="invTotalAmount">0.00</th>
                         </tr>
                     </tfoot>
                 </table>
-
+                
                 <!-- Bottom Section Grid -->
                 <div class="inv-footer-grid">
                     <!-- Bank Details -->

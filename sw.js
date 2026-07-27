@@ -1,10 +1,14 @@
-const CACHE_NAME = 'billflow-v25';
+const CACHE_NAME = 'billflow-v26';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './logo.png',
+  './comp-logo.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {

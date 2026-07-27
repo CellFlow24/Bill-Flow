@@ -516,6 +516,60 @@ body {
     align-items: center;
 }
 
+/* --- PWA Install Banner (Glassmorphism) --- */
+.install-banner {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 16px 20px;
+    z-index: 10000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: opacity 0.5s ease, bottom 0.5s ease;
+}
+
+.install-hidden {
+    opacity: 0;
+    bottom: -100px;
+    pointer-events: none;
+}
+
+.install-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.install-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+    padding-bottom: 2px;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: var(--error-red);
+}
+
 /* --- THE PRINT ENGINE --- */
 @media print {
     @page {

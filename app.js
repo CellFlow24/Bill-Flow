@@ -1004,3 +1004,39 @@ function openPrintPreview(billData, origin = 'historyScreen') {
     }
     switchTab('printPreviewScreen');
 }
+
+// --- PWA Installation Logic ---
+let deferredPrompt;
+const installBanner = document.getElementById('installBanner');
+const installBtn = document.getElementById('installBtn');
+const closeInstallBtn = document.getElementById('closeInstallBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome from automatically showing the default prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Show the custom glassmorphism banner smoothly
+    installBanner.classList.remove('install-hidden');
+});
+
+installBtn.addEventListener('click', async () => {
+    // Hide the banner
+    installBanner.classList.add('install-hidden');
+    // Show the native prompt
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+    }
+});
+
+closeInstallBtn.addEventListener('click', () => {
+    installBanner.classList.add('install-hidden');
+});

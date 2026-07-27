@@ -440,7 +440,7 @@ body {
 
 .inv-company-details {
     flex-grow: 1;
-    text-align: center;
+    text-align: right;
     line-height: 1.4;
 }
 
@@ -609,4 +609,35 @@ body {
 .modal-box { 
     background: var(--white); padding: 25px; border-radius: 12px; 
     width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+}
+
+/* --- DESKTOP RESPONSIVENESS --- */
+@media (min-width: 768px) {
+    /* Expand the main app container and center it */
+    .screen-container {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Keep the login box from stretching too wide */
+    .auth-box {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    /* Expand the dashboard grid to 4 columns instead of 2 */
+    .dashboard-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Make the Today's Amount card span 2 columns so it still stands out */
+    .dashboard-grid .stat-card:first-child {
+        grid-column: span 2; 
+    }
+
+    /* Allow form inputs to sit nicely next to each other on big screens */
+    .input-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
 }

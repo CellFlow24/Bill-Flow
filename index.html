@@ -23,6 +23,18 @@
     <!-- Custom Toast Notification -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- PWA Install Banner (Glassmorphism) -->
+    <div id="installBanner" class="install-banner install-hidden no-print">
+        <div class="install-text">
+            <strong style="color: var(--navy-blue); font-size: 1.05rem;">Install BillFlow</strong>
+            <span style="color: var(--text-light); font-size: 0.85rem;">Add to home screen for fast access</span>
+        </div>
+        <div class="install-actions">
+            <button id="installBtn" class="btn-primary" style="padding: 8px 16px; width: auto; font-size: 0.9rem;">Install</button>
+            <button id="closeInstallBtn" class="close-btn">&times;</button>
+        </div>
+    </div>
+
     <!-- Floating Hamburger Menu -->
     <div id="topAppBar" class="top-app-bar hidden no-print">
         <div class="menu-icon" onclick="toggleMenu()">

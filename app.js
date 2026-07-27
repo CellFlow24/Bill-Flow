@@ -883,6 +883,15 @@ function openPrintPreview(billData, origin = 'historyScreen') {
     }
 
     // 2. Populate Customer & Bill Info
+    
+    const docTitle = document.getElementById('invDocType');
+    if (parseFloat(billData.due) > 0) {
+        docTitle.innerText = "CHALAN";
+    } else {
+        docTitle.innerText = "INVOICE";
+    }
+    // ----------------------------------------------
+
     document.getElementById('invCustomerName').innerText = billData.customerName || billData.name;
     document.getElementById('invBillId').innerText = billData.billId || billData.id;
     
@@ -915,23 +924,32 @@ function openPrintPreview(billData, origin = 'historyScreen') {
     itemsList.forEach((item, idx) => {
         const tr = document.createElement('tr');
         const itemName = item.name || item.itemName; 
-        const qty = item.qty;
-        const rate = item.price;
-        const itemTot = item.itemTotal || (parseFloat(rate) * qty).toFixed(2);
-        const itemGst = parseFloat(item.gstAmount || 0);
+        const qty = parseFloat(item.qty) || 1;
+        const itemTot = parseFloat(item.itemTotal || (parseFloat(item.price) * qty));
+        const itemGstAmt = parseFloat(item.gstAmount || 0);
         
-        totalGstAmount += itemGst;
+        totalGstAmount += itemGstAmt;
+
+        // Extract the true base rate (excluding GST) and the exact GST percentage
+        const baseTotal = itemTot - itemGstAmt;
+        const baseRate = baseTotal / qty;
+        
+        let gstPercent = 0;
+        if (baseTotal > 0) {
+            gstPercent = Math.round((itemGstAmt / baseTotal) * 100);
+        }
 
         tr.innerHTML = `
             <td>${idx + 1}</td>
             <td style="text-align: left;">${itemName}</td>
             <td>${qty}</td>
-            <td>${rate}</td>
-            <td>${itemTot}</td>
+            <td>${baseRate.toFixed(2)}</td>
+            <td>${gstPercent > 0 ? gstPercent + '%' : '-'}</td>
+            <td>${itemTot.toFixed(2)}</td>
         `;
         tbody.appendChild(tr);
     });
-
+    
     // 4. Totals, Math, and Strict GST Logic
     document.getElementById('invSubTotal').innerText = billData.subTotal;
     document.getElementById('invDiscount').innerText = billData.discount;
